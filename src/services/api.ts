@@ -1,4 +1,9 @@
-import { getStoredToken } from '@/utils/authStorage';
+import { getStoredToken, setStoredToken } from '@/utils/authStorage';
+
+
+
+// 1. Attach stored token to every outgoing request
+// 2. Auto-save any accessToken returned by the API
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import { getFingerprint } from '@/utils/fingerprint';
 import type { ApiErrorBody } from '@/types';
@@ -24,16 +29,56 @@ export const api: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-/* ─── Device fingerprint on every request ────────────────── */
+// ═══════════════════════════════════════════════════════════
+// JWT + Device Fingerprint handling
+// ═══════════════════════════════════════════════════════════
+
+// 1. Attach token + device fingerprint to every request
 api.interceptors.request.use(async (config) => {
+  const token = getStoredToken();
+  if (token) {
+    config.headers = config.headers ?? {};
+    (config.headers as any).Authorization = `Bearer ${token}`;
+  }
+
+  // Device fingerprint (used for deactivated-device hard-block)
   try {
     const fp = await getFingerprint();
     config.headers = config.headers ?? {};
-    (config.headers as Record<string, string>)['X-Device-Fingerprint'] = fp;
-  } catch {}
+    (config.headers as any)['X-Device-Fingerprint'] = fp;
+  } catch {
+    /* non-fatal — server accepts requests without it */
+  }
+
   return config;
 });
 
+// 2. Auto-save any accessToken the API returns
+api.interceptors.response.use((response) => {
+  const payload: any = response?.data;
+  const token =
+    payload?.data?.accessToken ??
+    payload?.accessToken ??
+    payload?.data?.data?.accessToken;
+  if (typeof token === 'string' && token.length > 30) {
+    setStoredToken(token);
+  }
+  return response;
+});
+
+
+// ═══════════════════════════════════════════════════════════
+// JWT handling for cross-domain deployments
+// (sslip.io testing; will use httpOnly cookies when we move
+// to vickkyaku.com in production.)
+// ═══════════════════════════════════════════════════════════
+
+// 1. Attach stored token to every outgoing request
+
+// 2. Auto-save any accessToken the API returns
+
+
+/* ─── Device fingerprint on every request ────────────────── */
 /* ─── 401 handler ────────────────────────────────────────── */
 let onUnauthorized: (() => void) | null = null;
 export function setUnauthorizedHandler(fn: () => void) {
@@ -108,17 +153,4 @@ export async function del<T>(url: string): Promise<T> {
   return res.data?.data as T;
 }
 
-
-// ═══════════════════════════════════════════════════════════
-// Inject JWT from localStorage into every request
-// (Enables cross-domain auth without cookies.)
-// ═══════════════════════════════════════════════════════════
-api.interceptors.request.use((config) => {
-  const token = getStoredToken();
-  if (token) {
-    config.headers = config.headers ?? {};
-    (config.headers as any).Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
