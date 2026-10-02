@@ -1,3 +1,4 @@
+import { clearStoredToken } from '@/utils/authStorage';
 import { create } from 'zustand';
 import type { UserProfile } from '@/types';
 
@@ -14,5 +15,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   hydrated: false,
   setUser: (user) => set({ user }),
   setHydrated: (hydrated) => set({ hydrated }),
-  clear: () => set({ user: null }),
+  clear: () => {
+    clearStoredToken();
+    set({ user: null });
+  },
 }));
