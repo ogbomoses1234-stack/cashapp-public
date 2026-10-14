@@ -5,8 +5,16 @@ import { getInitials } from '@/utils/format';
 import { toast } from '@/hooks/useToast';
 import type { ReactNode } from 'react';
 
-interface MenuItem { to: string; icon: ReactNode; title: string; sub: string; }
-interface MenuSection { label: string; items: MenuItem[]; }
+interface MenuItem {
+  to: string;
+  icon: ReactNode;
+  title: string;
+  sub: string;
+}
+interface MenuSection {
+  label: string;
+  items: MenuItem[];
+}
 
 const SECTIONS: MenuSection[] = [
   {
@@ -35,12 +43,12 @@ const SECTIONS: MenuSection[] = [
         title: 'Order tracking',
         sub: 'See all your orders',
       },
-   {
-  to: '/packages',
-  icon: <IconShoppingBag />,
-  title: 'Special orders',
-  sub: 'Personal shopping from any Nigerian market',
-},
+      {
+        to: '/packages',
+        icon: <IconShoppingBag />,
+        title: 'Special orders',
+        sub: 'Personal shopping from any Nigerian market',
+      },
       {
         to: '/chat',
         icon: <IconChat />,
@@ -67,6 +75,7 @@ const QUICK_ACTIONS = [
   { to: '/orders', label: 'Orders', Icon: IconOrders },
   { to: '/packages', label: 'Special', Icon: IconShoppingBag },
 ];
+
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
   const clear = useAuthStore((s) => s.clear);
@@ -74,7 +83,9 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     if (!window.confirm('Sign out of your account?')) return;
-    try { await logout(); } catch {}
+    try {
+      await logout();
+    } catch {}
     clear();
     toast.success('Signed out');
     navigate('/');
@@ -86,13 +97,12 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6 pb-4 lg:grid lg:grid-cols-[320px_1fr] lg:gap-6">
-      {/* ─── LEFT COLUMN: identity + quick actions ─── */}
+      {/* LEFT COLUMN */}
       <div className="space-y-5">
         <h1 className="text-[24px] font-bold tracking-[-0.02em] text-ink-900 lg:hidden">
           Profile
         </h1>
 
-        {/* Identity card */}
         <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 p-5 text-white">
           <div
             aria-hidden
@@ -131,7 +141,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Quick actions */}
         <div className="grid grid-cols-3 gap-2.5">
           {QUICK_ACTIONS.map(({ to, label, Icon }) => (
             <Link
@@ -150,7 +159,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ─── RIGHT COLUMN: menus + sign out ─────────── */}
+      {/* RIGHT COLUMN */}
       <div className="space-y-5">
         {SECTIONS.map((section) => (
           <section key={section.label}>
@@ -186,7 +195,6 @@ export default function ProfilePage() {
           </section>
         ))}
 
-        {/* Sign out */}
         <button
           onClick={handleLogout}
           className="flex w-full items-center gap-3.5 rounded-xl bg-white px-4 py-3.5 text-left ring-1 ring-ink-200/70 transition-colors hover:bg-rose-50/60 active:scale-[.99]"
@@ -235,15 +243,6 @@ function IconPayout() {
     </svg>
   );
 }
-function IconShoppingBag() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-      <path d="M3 6h18" />
-      <path d="M16 10a4 4 0 0 1-8 0" />
-    </svg>
-  );
-}
 function IconOrders() {
   return (
     <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -254,13 +253,12 @@ function IconOrders() {
     </svg>
   );
 }
-function IconGlobe() {
+function IconShoppingBag() {
   return (
     <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M3 12h18" />
-      <path d="M12 3a13.5 13.5 0 0 1 0 18" />
-      <path d="M12 3a13.5 13.5 0 0 0 0 18" />
+      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+      <path d="M3 6h18" />
+      <path d="M16 10a4 4 0 0 1-8 0" />
     </svg>
   );
 }

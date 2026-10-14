@@ -15,13 +15,22 @@ import { Spinner } from '@/components/ui/Spinner';
 import { toast } from '@/hooks/useToast';
 import { ApiClientError } from '@/services/api';
 
-/* Fail safe — never let the page hang forever */
+/* Fail-safe — never let the page hang forever */
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error(`Request timed out after ${ms}ms`)), ms);
+    const t = setTimeout(
+      () => reject(new Error(`Request timed out after ${ms}ms`)),
+      ms
+    );
     promise.then(
-      (v) => { clearTimeout(t); resolve(v); },
-      (e) => { clearTimeout(t); reject(e); }
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(t);
+        reject(e);
+      }
     );
   });
 }
@@ -40,6 +49,7 @@ export default function ProductDetailPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
+  /* ─── Load product ───────────────────────────────── */
   useEffect(() => {
     if (!slug) {
       setLoading(false);
@@ -54,20 +64,15 @@ export default function ProductDetailPage() {
     setRelated([]);
     setQty(1);
 
-    console.log('[ProductDetail] → fetching slug:', slug);
-
     withTimeout(getProduct(slug), 6000)
       .then((p) => {
         if (!alive) return;
-        console.log('[ProductDetail] ← response:', p);
-
         if (!p || typeof p !== 'object') {
           setErrorMessage('This product could not be found.');
           return;
         }
         setProduct(p);
 
-        /* Related products — fire and forget */
         withTimeout(
           listProducts({ category: p.category ?? undefined, perPage: 8 }),
           6000
@@ -80,11 +85,10 @@ export default function ProductDetailPage() {
                 .slice(0, 6)
             );
           })
-          .catch((e) => console.warn('[ProductDetail] related failed:', e));
+          .catch(() => {});
       })
       .catch((err) => {
         if (!alive) return;
-        console.error('[ProductDetail] ✗ error:', err);
         const msg =
           err instanceof Error
             ? err.message
@@ -97,9 +101,12 @@ export default function ProductDetailPage() {
         if (alive) setLoading(false);
       });
 
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [slug]);
 
+  /* ─── Cart state for this product ─────────────────── */
   const cartItem = useMemo(
     () => items.find((i) => i.productId === product?.id),
     [items, product?.id]
@@ -108,7 +115,7 @@ export default function ProductDetailPage() {
   const cartQty = cartItem?.quantity ?? 0;
   const displayQty = inCart ? cartQty : qty;
 
-  /* ─── Loading ────────────────────────────────────── */
+  /* ─── Loading ─────────────────────────────────────── */
   if (loading) {
     return (
       <PublicShell>
@@ -120,7 +127,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  /* ─── Error / not found ──────────────────────────── */
+  /* ─── Error ───────────────────────────────────────── */
   if (errorMessage || !product) {
     return (
       <PublicShell>
@@ -158,29 +165,6 @@ export default function ProductDetailPage() {
     return true;
   };
 
-  const handleIncrement = async () => {
-    if (mutating || displayQty >= maxQty) return;
-    if (inCart && cartItem) {
-      try { await update(cartItem.id, cartQty + 1); } catch {}
-    } else {
-      setQty((q) => Math.min(maxQty, q + 1));
-    }
-  };
-
-  const handleDecrement = async () => {
-    if (mutating) return;
-    if (inCart && cartItem) {
-      if (cartQty <= 1) {
-        if (!window.confirm(`Remove "${product.title}" from cart?`)) return;
-        try { await update(cartItem.id, 0); } catch {}
-      } else {
-        try { await update(cartItem.id, cartQty - 1); } catch {}
-      }
-    } else {
-      setQty((q) => Math.max(1, q - 1));
-    }
-  };
-
   const handleAdd = async () => {
     if (!requireAuth() || !inStock) return;
     setAdding(true);
@@ -212,6 +196,9 @@ export default function ProductDetailPage() {
     }
   };
 
+  /* ═══════════════════════════════════════════════════
+     BUY BOX — shared between mobile bottom bar + desktop rail
+  ═══════════════════════════════════════════════════ */
   const BuyBox = (
     <div className="space-y-4">
       <div>
@@ -219,7 +206,6 @@ export default function ProductDetailPage() {
           <span className="text-[26px] font-bold leading-none tracking-[-0.02em] tabular-nums text-ink-900">
             {formatNaira(product.price)}
           </span>
- 
         </div>
         <div className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-brand-50 px-2 py-1 ring-1 ring-inset ring-brand-200">
           <span className="grid h-3.5 w-3.5 place-items-center rounded-full bg-brand-500 text-[8px] font-bold text-white">
@@ -274,7 +260,8 @@ export default function ProductDetailPage() {
         />
       </div>
 
-      <div className="space-y-2">
+      {/* Buy/add buttons — desktop rail only */}
+      <div className="hidden space-y-2 lg:block">
         {inCart ? (
           <>
             <Button variant="brand" size="lg" block onClick={handleBuyNow} disabled={adding || mutating}>
@@ -339,6 +326,7 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
+            {/* Mobile: full BuyBox below the image */}
             <div className="lg:hidden">{BuyBox}</div>
 
             <div className="hidden grid-cols-3 gap-2.5 lg:grid">
@@ -367,6 +355,7 @@ export default function ProductDetailPage() {
           </aside>
         </div>
 
+        {/* Mobile sticky footer bar */}
         <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-ink-200 bg-white/95 px-4 py-3 backdrop-blur-md lg:hidden">
           <div className="mx-auto flex max-w-3xl items-center gap-3">
             <div className="min-w-0 flex-1">

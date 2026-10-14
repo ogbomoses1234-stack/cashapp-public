@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { BannerCarousel } from '@/components/banner/BannerCarousel';
@@ -16,7 +16,7 @@ import { listMyPackages } from '@/services/package.service';
 import { getWallet } from '@/services/wallet.service';
 import type { Product, WalletSummary } from '@/types';
 import type { PackageRequest } from '@/types/package';
-import { formatNaira, formatRelative } from '@/utils/format';
+import { formatNaira } from '@/utils/format';
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -29,7 +29,6 @@ const HOME_PRODUCT_PREVIEW = 8;
 
 export default function HomePage() {
   const user = useAuthStore((s) => s.user);
-  const navigate = useNavigate();
 
   const [banners, setBanners] = useState<Banner[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -63,7 +62,9 @@ export default function HomePage() {
     let alive = true;
     setLoading(true);
     load().finally(() => alive && setLoading(false));
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [load]);
 
   const { pulling, distance, refreshing } = usePullToRefresh({ onRefresh: load });
@@ -76,9 +77,7 @@ export default function HomePage() {
       <PullToRefresh pulling={pulling} distance={distance} refreshing={refreshing} />
 
       <div className="lg:grid lg:grid-cols-[1fr_320px] lg:gap-8">
-        {/* ═══════════════════════════════════════════════
-            MAIN COLUMN
-        ═══════════════════════════════════════════════ */}
+        {/* MAIN COLUMN */}
         <div className="min-w-0 space-y-5">
           {/* Mobile greeting row */}
           <div className="flex items-end justify-between gap-3 lg:hidden">
@@ -156,7 +155,6 @@ export default function HomePage() {
             </svg>
           </Link>
 
-          {/* Guest CTA — mobile only */}
           {!user && (
             <div className="rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 p-5 text-white lg:hidden">
               <p className="text-[15px] font-bold tracking-tight">
@@ -183,12 +181,9 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* ═══════════════════════════════════════════════
-            RIGHT RAIL (desktop only)
-        ═══════════════════════════════════════════════ */}
+        {/* RIGHT RAIL (desktop) */}
         <aside className="hidden lg:block">
           <div className="sticky top-20 space-y-3">
-            {/* Wallet card */}
             <Link
               to="/wallet"
               className="block rounded-xl bg-gradient-to-br from-ink-900 to-ink-800 p-4 text-white transition-colors hover:from-ink-800 hover:to-ink-800"
@@ -207,7 +202,6 @@ export default function HomePage() {
               </div>
             </Link>
 
-            {/* Active special order OR start-a-list CTA */}
             {activePackage ? (
               <Link
                 to={`/packages/${activePackage.id}`}
@@ -253,7 +247,6 @@ export default function HomePage() {
               </Link>
             )}
 
-            {/* Quick links */}
             <div className="rounded-xl bg-white p-2 ring-1 ring-ink-200/70">
               <QuickLink to="/orders" icon="📦" label="My orders" />
               <QuickLink to="/packages" icon="🛍️" label="Special orders" />

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getWallet } from '@/services/wallet.service';
-import { requestWithdrawal, listWithdrawals } from '@/services/withdrawal.service';
+import {
+  requestWithdrawal,
+  listWithdrawals,
+} from '@/services/withdrawal.service';
 import { getSavedPayout, type SavedPayout } from '@/services/payout.service';
 import type { WalletSummary, WithdrawalRequest } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { EmptyState } from '@/components/ui/EmptyState';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatNaira, formatDate, maskAccountNumber } from '@/utils/format';
 import { toast } from '@/hooks/useToast';
@@ -33,7 +35,9 @@ export default function WithdrawalPage() {
         setLoading(false);
       }
     );
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const balance = parseFloat(wallet?.walletBalance ?? '0');
@@ -83,9 +87,7 @@ export default function WithdrawalPage() {
     );
   }
 
-  /* ═══════════════════════════════════════════════
-     No payout account set up
-  ═══════════════════════════════════════════════ */
+  /* No payout account */
   if (!hasPayout) {
     return (
       <div className="space-y-5 pb-2">
@@ -126,9 +128,7 @@ export default function WithdrawalPage() {
     );
   }
 
-  /* ═══════════════════════════════════════════════
-     Main withdrawal view (2-col on desktop)
-  ═══════════════════════════════════════════════ */
+  /* Main view */
   return (
     <div className="pb-2">
       <div className="mb-5">
@@ -139,9 +139,7 @@ export default function WithdrawalPage() {
       </div>
 
       <div className="lg:grid lg:grid-cols-[1fr_380px] lg:gap-6">
-        {/* ─── LEFT: balance + form ─────────────────── */}
         <div className="space-y-4">
-          {/* Balance card */}
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 p-5 text-white">
             <div
               aria-hidden
@@ -158,7 +156,6 @@ export default function WithdrawalPage() {
             </div>
           </div>
 
-          {/* Payout account preview */}
           <div className="flex items-center gap-3 rounded-xl bg-white p-4 ring-1 ring-ink-200/70">
             <span className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-600">
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -186,7 +183,6 @@ export default function WithdrawalPage() {
             </Link>
           </div>
 
-          {/* Amount input */}
           <div className="space-y-4 rounded-xl bg-white p-5 ring-1 ring-ink-200/70">
             <label className="block">
               <span className="mb-2 block text-[12px] font-semibold tracking-[-0.005em] text-ink-700">
@@ -199,7 +195,10 @@ export default function WithdrawalPage() {
                 <input
                   inputMode="decimal"
                   value={amount}
-                  onChange={(e) => { setError(null); setAmount(e.target.value.replace(/[^\d.]/g, '')); }}
+                  onChange={(e) => {
+                    setError(null);
+                    setAmount(e.target.value.replace(/[^\d.]/g, ''));
+                  }}
                   placeholder="0.00"
                   disabled={submitting}
                   className="h-12 w-full rounded-lg border-0 bg-white pl-9 pr-4 text-[15px] font-semibold tabular-nums text-ink-900 outline-none ring-1 ring-inset ring-ink-200 transition-colors placeholder:font-normal placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500 disabled:opacity-60"
@@ -265,7 +264,6 @@ export default function WithdrawalPage() {
           </div>
         </div>
 
-        {/* ─── RIGHT: history (desktop) ─────────────── */}
         <aside className="mt-5 space-y-3 lg:mt-0">
           <div className="sticky top-20 space-y-3">
             <h2 className="px-1 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-400">
@@ -296,8 +294,11 @@ export default function WithdrawalPage() {
 
 function WithdrawalRow({ withdrawal }: { withdrawal: WithdrawalRequest }) {
   const tone =
-    withdrawal.status === 'approved' ? 'green'
-    : withdrawal.status === 'declined' ? 'rose' : 'amber';
+    withdrawal.status === 'approved'
+      ? 'green'
+      : withdrawal.status === 'declined'
+        ? 'rose'
+        : 'amber';
 
   return (
     <div className="overflow-hidden rounded-xl bg-white ring-1 ring-ink-200/70">

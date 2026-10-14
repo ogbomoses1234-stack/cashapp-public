@@ -6,6 +6,7 @@ const TABS = [
   { to: '/scan',     label: 'Scan',    Icon: ScanIcon, primary: true },
   { to: '/packages', label: 'Special', Icon: GlobeIcon },
   { to: '/wallet',   label: 'Wallet',  Icon: WalletIcon },
+  { to: '/profile',  label: 'Profile', Icon: ProfileTabIcon },
 ];
 
 export function BottomTabBar() {
@@ -28,9 +29,6 @@ export function BottomTabBar() {
         "
       >
         {TABS.map(({ to, label, Icon, primary }) => {
-          /* ══════════════════════════════════════════
-             Central FAB — Scan
-          ══════════════════════════════════════════ */
           if (primary) {
             return (
               <NavLink
@@ -55,9 +53,6 @@ export function BottomTabBar() {
             );
           }
 
-          /* ══════════════════════════════════════════
-             Standard tab
-          ══════════════════════════════════════════ */
           return (
             <NavLink
               key={to}
@@ -122,7 +117,7 @@ function WalletIcon({ className = '' }: { className?: string }) {
     </svg>
   );
 }
-function UserIcon({ className = '' }: { className?: string }) {
+function ProfileTabIcon({ className = '' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <circle cx="12" cy="8" r="4" />
