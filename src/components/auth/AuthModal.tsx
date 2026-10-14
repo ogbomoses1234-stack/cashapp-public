@@ -16,10 +16,10 @@ export function AuthModal() {
         <h3 className="text-lg font-extrabold tracking-tight text-ink-900">
           Create an account or log in
         </h3>
-        <p className="mx-auto mt-2 max-w-xs text-sm font-medium leading-relaxed text-slate-500">
-          {authModalMessage ??
-            'Unlock instant ₦100 cashback rewards, secure delivery tracking, and fast wallet cashouts.'}
-        </p>
+       <p className="mx-auto mt-2 max-w-xs text-sm font-medium leading-relaxed text-slate-500">
+  {authModalMessage ??
+    'Unlock instant cashback rewards, secure delivery tracking, and fast wallet cashouts.'}
+</p>
         <div className="mt-6 flex flex-col gap-2">
           <Button variant="primary" size="lg" block onClick={() => { closeAuthModal(); navigate('/signup'); }}>
             Create account

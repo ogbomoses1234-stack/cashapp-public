@@ -1,5 +1,5 @@
 interface LogoProps {
-  /** Height in px. Width auto-scales (aspect ratio is preserved). */
+  /** Height in px. Width auto-scales (aspect ratio preserved). */
   size?: number;
   className?: string;
   alt?: string;
@@ -9,7 +9,11 @@ interface LogoProps {
  * Vickkyaku brand mark — loaded from /public/vickkyaku.png.
  * Width auto-scales; the PNG's natural aspect ratio is preserved.
  */
-export function Logo({ size = 36, className = '', alt = 'Vickkyaku logo' }: LogoProps) {
+export function Logo({
+  size = 36,
+  className = '',
+  alt = 'Vickkyaku logo',
+}: LogoProps) {
   return (
     <img
       src="/vickkyaku.png"

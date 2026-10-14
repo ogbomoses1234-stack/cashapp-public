@@ -1,13 +1,9 @@
 import { useState } from 'react';
 
 interface RefreshButtonProps {
-  /** Async function to run when clicked. Button spins while it resolves. */
   onRefresh: () => Promise<unknown> | unknown;
-  /** Optional label/title for accessibility */
   label?: string;
-  /** Size in px */
   size?: number;
-  /** Visual tone */
   tone?: 'light' | 'dark';
   className?: string;
 }
@@ -43,18 +39,24 @@ export function RefreshButton({
       disabled={busy}
       aria-label={label}
       title={label}
-      className={`relative grid h-9 w-9 place-items-center rounded-xl transition active:scale-95 disabled:cursor-not-allowed ${
-        isLight
-          ? 'bg-white text-ink-700 shadow-card ring-1 ring-ink-100/60 hover:bg-ink-50'
-          : 'bg-white/[.06] text-white ring-1 ring-inset ring-white/15 hover:bg-white/[.12]'
-      } ${className}`}
+      className={`
+        relative grid h-9 w-9 place-items-center rounded-lg
+        transition-colors duration-150 active:scale-95
+        disabled:cursor-not-allowed
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-1
+        ${
+          isLight
+            ? 'bg-white text-ink-600 ring-1 ring-inset ring-ink-200 hover:bg-ink-50 hover:text-ink-900'
+            : 'bg-white/10 text-white ring-1 ring-inset ring-white/15 hover:bg-white/15'
+        }
+        ${className}
+      `}
     >
-      {/* Ring pulse when just finished */}
       {justFinished && (
         <span
-          className={`pointer-events-none absolute inset-0 rounded-xl ${
+          className={`pointer-events-none absolute inset-0 rounded-lg ring-pulse ${
             isLight ? 'text-brand-500' : 'text-brand-400'
-          } ring-pulse`}
+          }`}
           style={{ inset: '-2px' }}
         />
       )}

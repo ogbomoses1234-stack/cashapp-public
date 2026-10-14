@@ -44,13 +44,13 @@ export default function LandingPage() {
     };
   }, []);
 
-  const goToSearch = () => {
-    if (user) {
-      navigate('/products');
-    } else {
-      openAuthModal('Create an account to search, save favorites, and unlock ₦100 cashback.');
-    }
-  };
+ const goToSearch = () => {
+  if (user) {
+    navigate('/products');
+  } else {
+    openAuthModal('Create an account to search, save favorites, and unlock cashback.');
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-50 text-ink-900">

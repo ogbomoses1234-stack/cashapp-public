@@ -9,8 +9,8 @@ interface SpinnerProps {
 }
 
 const TONES: Record<SpinnerTone, { ring: string; ringTrack: string; dot: string }> = {
-  light: { ring: 'border-white', ringTrack: 'border-white/25', dot: 'bg-white' },
-  dark: { ring: 'border-ink-700', ringTrack: 'border-ink-200', dot: 'bg-ink-700' },
+  light: { ring: 'border-white',   ringTrack: 'border-white/25',  dot: 'bg-white' },
+  dark:  { ring: 'border-ink-700', ringTrack: 'border-ink-200',   dot: 'bg-ink-700' },
   brand: { ring: 'border-brand-500', ringTrack: 'border-brand-200', dot: 'bg-brand-500' },
 };
 
@@ -32,7 +32,6 @@ export function Spinner({
           height: size,
           borderTopColor: 'transparent',
           borderRightColor: 'transparent',
-          transform: 'rotate(45deg)',
         }}
         role="status"
         aria-label="Loading"
@@ -64,12 +63,8 @@ export function Spinner({
       role="status"
       aria-label="Loading"
     >
-      <span
-        className={`absolute inset-0 rounded-full ${t.dot} animate-pulse-soft`}
-      />
-      <span
-        className={`absolute inset-0 rounded-full ${t.dot} opacity-50 animate-ping`}
-      />
+      <span className={`absolute inset-0 rounded-full ${t.dot} animate-pulse-soft`} />
+      <span className={`absolute inset-0 rounded-full ${t.dot} opacity-50 animate-ping`} />
     </span>
   );
 }

@@ -6,8 +6,9 @@ import { setUnauthorizedHandler } from '@/services/api';
 /**
  * Bootstraps auth once on app load:
  *  - Calls GET /api/public/auth/me
- *  - Populates the store or clears on 401
- *  - Registers a global 401 handler that resets state
+ *  - The axios interceptor will silently refresh on 401
+ *  - Populates the store, or clears on hard failure
+ *  - Registers a global 401 handler that resets local state
  */
 export function useAuthBootstrap() {
   const setUser = useAuthStore((s) => s.setUser);

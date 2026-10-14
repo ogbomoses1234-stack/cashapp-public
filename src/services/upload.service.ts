@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { post } from './api';
 
-export type UploadPurpose = 'receipt' | 'dispute' | 'chat' | 'avatar';
-
+export type UploadPurpose = 'receipt' | 'dispute' | 'chat' | 'avatar' | 'package';
 interface PresignResponse {
   uploadUrl: string;
   objectKey: string;

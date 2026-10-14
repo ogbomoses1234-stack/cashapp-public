@@ -1,20 +1,26 @@
 /**
- * Access-token storage for cross-domain deployments.
+ * Token storage for cross-domain deployments.
  *
  * On same-domain deployments (production with vickkyaku.com), the backend
- * sets an httpOnly cookie and this file is unused.
+ * sets httpOnly cookies and this file is unused.
  *
- * On cross-domain deployments (sslip.io testing), we store the JWT in
- * localStorage and send it via Authorization: Bearer <token>.
+ * On cross-domain deployments (localhost, sslip.io), we store tokens in
+ * localStorage and send them:
+ *   - accessToken  →  Authorization: Bearer <token>
+ *   - refreshToken →  JSON body { refreshToken }
  *
- * The backend accepts BOTH — cookie OR Authorization header.
+ * The backend accepts BOTH.
  */
 
-const TOKEN_KEY = 'qrcb_access_token';
+const ACCESS_KEY = 'qrcb_access_token';
+const REFRESH_KEY = 'qrcb_refresh_token';
 
+/* ═══════════════════════════════════════════════════
+   ACCESS TOKEN
+═══════════════════════════════════════════════════ */
 export function getStoredToken(): string | null {
   try {
-    return localStorage.getItem(TOKEN_KEY);
+    return localStorage.getItem(ACCESS_KEY);
   } catch {
     return null;
   }
@@ -22,12 +28,43 @@ export function getStoredToken(): string | null {
 
 export function setStoredToken(token: string): void {
   try {
-    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(ACCESS_KEY, token);
   } catch {}
 }
 
 export function clearStoredToken(): void {
   try {
-    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ACCESS_KEY);
   } catch {}
+}
+
+/* ═══════════════════════════════════════════════════
+   REFRESH TOKEN
+═══════════════════════════════════════════════════ */
+export function getStoredRefreshToken(): string | null {
+  try {
+    return localStorage.getItem(REFRESH_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredRefreshToken(token: string): void {
+  try {
+    localStorage.setItem(REFRESH_KEY, token);
+  } catch {}
+}
+
+export function clearStoredRefreshToken(): void {
+  try {
+    localStorage.removeItem(REFRESH_KEY);
+  } catch {}
+}
+
+/* ═══════════════════════════════════════════════════
+   BOTH
+═══════════════════════════════════════════════════ */
+export function clearAllStoredTokens(): void {
+  clearStoredToken();
+  clearStoredRefreshToken();
 }

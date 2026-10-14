@@ -1,10 +1,11 @@
-import { getStoredToken, setStoredToken } from '@/utils/authStorage';
-
-
-
-// 1. Attach stored token to every outgoing request
-// 2. Auto-save any accessToken returned by the API
-import axios, { AxiosError, AxiosInstance } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+import {
+  getStoredToken,
+  setStoredToken,
+  getStoredRefreshToken,
+  setStoredRefreshToken,
+  clearAllStoredTokens,
+} from '@/utils/authStorage';
 import { getFingerprint } from '@/utils/fingerprint';
 import type { ApiErrorBody } from '@/types';
 
@@ -22,18 +23,18 @@ export class ApiClientError extends Error {
   }
 }
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 export const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  baseURL: BASE_URL,
   withCredentials: true,
   timeout: 20000,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// ═══════════════════════════════════════════════════════════
-// JWT + Device Fingerprint handling
-// ═══════════════════════════════════════════════════════════
-
-// 1. Attach token + device fingerprint to every request
+/* ═══════════════════════════════════════════════════
+   REQUEST INTERCEPTOR — attach token + fingerprint
+═══════════════════════════════════════════════════ */
 api.interceptors.request.use(async (config) => {
   const token = getStoredToken();
   if (token) {
@@ -41,7 +42,6 @@ api.interceptors.request.use(async (config) => {
     (config.headers as any).Authorization = `Bearer ${token}`;
   }
 
-  // Device fingerprint (used for deactivated-device hard-block)
   try {
     const fp = await getFingerprint();
     config.headers = config.headers ?? {};
@@ -53,42 +53,113 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// 2. Auto-save any accessToken the API returns
+/* ═══════════════════════════════════════════════════
+   RESPONSE INTERCEPTOR — auto-save any returned tokens
+═══════════════════════════════════════════════════ */
 api.interceptors.response.use((response) => {
   const payload: any = response?.data;
-  const token =
+  const access =
     payload?.data?.accessToken ??
     payload?.accessToken ??
     payload?.data?.data?.accessToken;
-  if (typeof token === 'string' && token.length > 30) {
-    setStoredToken(token);
+  if (typeof access === 'string' && access.length > 30) {
+    setStoredToken(access);
+  }
+  const refresh =
+    payload?.data?.refreshToken ??
+    payload?.refreshToken ??
+    payload?.data?.data?.refreshToken;
+  if (typeof refresh === 'string' && refresh.length > 30) {
+    setStoredRefreshToken(refresh);
   }
   return response;
 });
 
-
-// ═══════════════════════════════════════════════════════════
-// JWT handling for cross-domain deployments
-// (sslip.io testing; will use httpOnly cookies when we move
-// to vickkyaku.com in production.)
-// ═══════════════════════════════════════════════════════════
-
-// 1. Attach stored token to every outgoing request
-
-// 2. Auto-save any accessToken the API returns
-
-
-/* ─── Device fingerprint on every request ────────────────── */
-/* ─── 401 handler ────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════
+   AUTH 401 HANDLER
+═══════════════════════════════════════════════════ */
 let onUnauthorized: (() => void) | null = null;
 export function setUnauthorizedHandler(fn: () => void) {
   onUnauthorized = fn;
 }
 
-/* ─── Response interceptor — normalize errors ───────────── */
+/* ═══════════════════════════════════════════════════
+   REFRESH LOGIC — de-duped across concurrent 401s
+═══════════════════════════════════════════════════ */
+let refreshPromise: Promise<string | null> | null = null;
+
+async function attemptRefresh(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async (): Promise<string | null> => {
+    try {
+      const refreshToken = getStoredRefreshToken();
+
+      /* Bare axios — bypass our interceptors to avoid recursion */
+      const res = await axios.post(
+        `${BASE_URL}/api/public/auth/refresh`,
+        refreshToken ? { refreshToken } : {},
+        { withCredentials: true, timeout: 15000 }
+      );
+
+      const data = res.data?.data ?? res.data;
+      const newAccess = data?.accessToken;
+      const newRefresh = data?.refreshToken;
+
+      if (typeof newAccess === 'string') setStoredToken(newAccess);
+      if (typeof newRefresh === 'string') setStoredRefreshToken(newRefresh);
+
+      return typeof newAccess === 'string' ? newAccess : null;
+    } catch {
+      clearAllStoredTokens();
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+/** Endpoints we should NOT auto-refresh on — avoids infinite loops */
+function shouldSkipRefresh(url: string | undefined): boolean {
+  if (!url) return false;
+  return (
+    url.includes('/api/public/auth/refresh') ||
+    url.includes('/api/public/auth/login') ||
+    url.includes('/api/public/auth/signup') ||
+    url.includes('/api/public/otp/')
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSE ERROR INTERCEPTOR
+═══════════════════════════════════════════════════ */
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError<ApiErrorBody>) => {
+  async (error: AxiosError<ApiErrorBody>) => {
+    const original = error.config as
+      | (AxiosRequestConfig & { _retry?: boolean })
+      | undefined;
+
+    /* ─── Try to refresh on 401 ─── */
+    if (
+      error.response?.status === 401 &&
+      original &&
+      !original._retry &&
+      !shouldSkipRefresh(original.url)
+    ) {
+      original._retry = true;
+      const newToken = await attemptRefresh();
+
+      if (newToken) {
+        original.headers = original.headers ?? {};
+        (original.headers as any).Authorization = `Bearer ${newToken}`;
+        return api.request(original);
+      }
+    }
+
+    /* ─── Normalize the error ─── */
     if (error.response) {
       const { status, data } = error.response;
       if (status === 401) onUnauthorized?.();
@@ -116,17 +187,14 @@ function defaultMessage(status: number): string {
   return 'Something went wrong';
 }
 
-/* ═══════════════════════════════════════════════════════════
-   Typed helpers
-═══════════════════════════════════════════════════════════ */
-
-/** Returns only `data` — the common case. */
+/* ═══════════════════════════════════════════════════
+   TYPED HELPERS
+═══════════════════════════════════════════════════ */
 export async function get<T>(url: string, params?: Record<string, unknown>): Promise<T> {
   const res = await api.get(url, { params });
   return res.data?.data as T;
 }
 
-/** Returns `data` + `meta` — for paginated endpoints. */
 export async function getWithMeta<T, M = Record<string, unknown>>(
   url: string,
   params?: Record<string, unknown>
@@ -152,5 +220,3 @@ export async function del<T>(url: string): Promise<T> {
   const res = await api.delete(url);
   return res.data?.data as T;
 }
-
-

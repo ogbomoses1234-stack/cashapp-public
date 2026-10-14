@@ -4,7 +4,9 @@ import { RootLayout } from '@/layouts/RootLayout';
 import { AuthLayout } from '@/layouts/AuthLayout';
 import { CustomerLayout } from '@/layouts/CustomerLayout';
 import { StaffLayout } from '@/layouts/StaffLayout';
-
+import PackagesPage from '@/pages/customer/PackagesPage';
+import PackageBuilderPage from '@/pages/customer/PackageBuilderPage';
+import PackageDetailPage from '@/pages/customer/PackageDetailPage';
 /* ─── Public pages ─────────────────────────────────────── */
 import LandingPage from '@/pages/LandingPage';
 import ProductsPage from '@/pages/ProductsPage';
@@ -104,6 +106,10 @@ export const router = createBrowserRouter([
                   { path: '/chat', element: <ChatPage /> },
                   { path: '/chat/:id', element: <ChatThreadPage /> },
                   { path: '/profile', element: <ProfilePage /> },
+                  { path: '/packages', element: <PackagesPage /> },
+{ path: '/packages/new', element: <PackageBuilderPage /> },
+{ path: '/packages/:id', element: <PackageDetailPage /> },
+{ path: '/packages/:id/edit', element: <PackageBuilderPage /> },
                 ],
               },
             ],

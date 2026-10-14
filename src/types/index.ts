@@ -215,3 +215,4 @@ export interface Paginated<T> {
   total: number;
   totalPages: number;
 }
+export * from './package';

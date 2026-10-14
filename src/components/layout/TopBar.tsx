@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useCart } from '@/hooks/useCart';
 import { getInitials } from '@/utils/format';
 import { Logo } from '@/components/brand/Logo';
+import { SearchBar } from './SearchBar';
 
 /* ─── Paths that should NOT show a back arrow ──────────── */
 const ROOT_PATHS = new Set([
@@ -14,6 +15,7 @@ const ROOT_PATHS = new Set([
   '/orders',
   '/profile',
   '/chat',
+  '/packages',
   '/staff/terminal',
   '/staff/stock',
   '/staff/profile',
@@ -44,21 +46,24 @@ export function TopBar() {
     else if (path.startsWith('/categories/')) navigate('/categories');
     else if (path.startsWith('/chat/')) navigate('/chat');
     else if (path.startsWith('/orders/')) navigate('/orders');
+    else if (path.startsWith('/packages/')) navigate('/packages');
     else if (user?.role === 'staff') navigate('/staff/terminal');
     else navigate(user ? '/home' : '/');
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#0B0F14]">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-        {/* ─── LEFT: back arrow OR logo ────────────────────── */}
-        <div className="flex min-w-0 items-center gap-2.5">
+    <header className="sticky top-0 z-20 border-b border-ink-200 bg-white/90 backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-2xl items-center gap-3 px-4 sm:max-w-3xl sm:px-6 lg:h-16">
+        {/* ═════════════════════════════════════════════
+            LEFT — mobile only (sidebar shows brand on lg+)
+        ═════════════════════════════════════════════ */}
+        <div className="flex min-w-0 items-center gap-2.5 lg:hidden">
           {showBack && (
             <button
               type="button"
               onClick={handleBack}
               aria-label="Go back"
-              className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl bg-white/[.07] text-white transition active:scale-95 hover:bg-white/[.12]"
+              className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg text-ink-600 transition-colors duration-150 hover:bg-ink-100 hover:text-ink-900 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -76,33 +81,41 @@ export function TopBar() {
 
           <Link
             to={user?.role === 'staff' ? '/staff/terminal' : user ? '/home' : '/'}
-            className="flex items-center gap-2.5 active:scale-[.98] transition"
+            className="flex items-center gap-2 transition-opacity active:opacity-80"
           >
-            {/* Logo container — dark rounded square for contrast */}
-            <div className="grid h-9 w-9 flex-shrink-0 place-items-center overflow-hidden rounded-xl bg-white/[.06] p-1 ring-1 ring-inset ring-white/[.06]">
-              <Logo size={24} />
-            </div>
-
+            <span className="grid h-9 w-9 flex-shrink-0 place-items-center overflow-hidden rounded-lg bg-ink-900 p-1">
+              <Logo size={22} alt="" />
+            </span>
             {!showBack && (
               <div className="leading-tight">
-                <strong className="block text-[13px] font-black tracking-tight text-white">
+                <strong className="block text-[13px] font-bold tracking-[-0.01em] text-ink-900">
                   Vickkyaku
                 </strong>
-                <span className="block text-[10px] font-semibold text-white/45">
-                  Cashback
+                <span className="block text-[10px] font-semibold text-ink-500">
+                  {user?.role === 'staff' ? 'Seller' : 'Cashback'}
                 </span>
               </div>
             )}
           </Link>
         </div>
 
-        {/* ─── RIGHT: cart + profile ─────────────────────── */}
-        <div className="flex items-center gap-2">
+        {/* ═════════════════════════════════════════════
+            CENTER — desktop only
+        ═════════════════════════════════════════════ */}
+        <div className="hidden flex-1 lg:flex lg:justify-start">
+          <SearchBar variant="inline" to={user ? '/products' : '/'} />
+        </div>
+
+        {/* ═════════════════════════════════════════════
+            RIGHT — cart + avatar / auth
+        ═════════════════════════════════════════════ */}
+        <div className="ml-auto flex items-center gap-1.5">
           {(!user || isCustomer) && (
             <button
+              type="button"
               onClick={() => navigate('/cart')}
               aria-label={`Cart (${count} items)`}
-              className="relative grid h-9 w-9 place-items-center rounded-xl bg-white/[.07] text-white transition active:scale-95 hover:bg-white/[.12]"
+              className="relative grid h-9 w-9 place-items-center rounded-lg text-ink-600 transition-colors duration-150 hover:bg-ink-100 hover:text-ink-900 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -118,7 +131,7 @@ export function TopBar() {
                 <path d="M2 3h3l2.5 12h11l2-8H6" />
               </svg>
               {count > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-brand-400 px-1 text-[9.5px] font-black text-[#04140d] shadow-[0_0_0_2px_#0B0F14]">
+                <span className="absolute -right-0.5 -top-0.5 grid h-[17px] min-w-[17px] place-items-center rounded-full bg-brand-500 px-1 text-[9.5px] font-bold text-ink-950 ring-2 ring-white">
                   {count > 99 ? '99+' : count}
                 </span>
               )}
@@ -127,33 +140,40 @@ export function TopBar() {
 
           {user ? (
             <button
+              type="button"
               onClick={() =>
                 navigate(user.role === 'staff' ? '/staff/profile' : '/profile')
               }
-              className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-[11px] font-black text-[#04140d]"
               aria-label="Profile"
+              className={`
+                grid h-9 w-9 place-items-center rounded-lg text-[11px] font-bold transition-transform active:scale-95
+                ${
+                  user.role === 'staff'
+                    ? 'bg-gradient-to-br from-violet-400 to-violet-600 text-white'
+                    : 'bg-gradient-to-br from-brand-400 to-brand-600 text-ink-950'
+                }
+              `}
             >
               {getInitials(user.fullName ?? user.email)}
             </button>
           ) : (
-            <>
+            <div className="flex items-center gap-1">
               <Link
                 to="/login"
-                className="rounded-xl px-3 py-2 text-[12px] font-bold text-white/70 hover:text-white"
+                className="hidden rounded-lg px-3 py-2 text-[12.5px] font-semibold text-ink-600 transition-colors duration-150 hover:bg-ink-100 hover:text-ink-900 sm:inline-flex"
               >
                 Log in
               </Link>
               <Link
                 to="/signup"
-                className="rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 px-3.5 py-2 text-[12px] font-black text-[#04140d]"
+                className="rounded-lg bg-ink-900 px-3 py-2 text-[12.5px] font-semibold text-white transition-colors duration-150 hover:bg-ink-800 active:scale-[.98]"
               >
                 Sign up
               </Link>
-            </>
+            </div>
           )}
         </div>
       </div>
-      <div className="h-px w-full bg-white/[.06]" />
     </header>
   );
 }
