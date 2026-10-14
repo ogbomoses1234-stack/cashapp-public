@@ -6,7 +6,7 @@ const TABS = [
   { to: '/scan',     label: 'Scan',    Icon: ScanIcon, primary: true },
   { to: '/packages', label: 'Special', Icon: GlobeIcon },
   { to: '/wallet',   label: 'Wallet',  Icon: WalletIcon },
-
+{ to: '/profile',  label: 'Profile', Icon: ProfileTabIcon },
 ];
 
 export function BottomTabBar() {
