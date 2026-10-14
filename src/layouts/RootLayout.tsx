@@ -3,11 +3,12 @@ import { AuthModal } from '@/components/auth/AuthModal';
 import { ToastHost } from '@/components/ui/Toast';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { RouteProgress } from '@/components/ui/RouteProgress';
+import { ScrollToTop } from '@/components/layout/ScrollToTop';
 
 export function RootLayout() {
   return (
     <ErrorBoundary>
-      {/* Slim bar at the very top during route changes */}
+      <ScrollToTop />
       <RouteProgress />
 
       <Outlet />

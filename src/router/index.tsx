@@ -4,9 +4,7 @@ import { RootLayout } from '@/layouts/RootLayout';
 import { AuthLayout } from '@/layouts/AuthLayout';
 import { CustomerLayout } from '@/layouts/CustomerLayout';
 import { StaffLayout } from '@/layouts/StaffLayout';
-import PackagesPage from '@/pages/customer/PackagesPage';
-import PackageBuilderPage from '@/pages/customer/PackageBuilderPage';
-import PackageDetailPage from '@/pages/customer/PackageDetailPage';
+
 /* ─── Public pages ─────────────────────────────────────── */
 import LandingPage from '@/pages/LandingPage';
 import ProductsPage from '@/pages/ProductsPage';
@@ -19,6 +17,14 @@ import ProfileSetupPage from '@/pages/ProfileSetupPage';
 import ScanLandingPage from '@/pages/ScanLandingPage';
 import RouteErrorPage from '@/pages/RouteErrorPage';
 import NotFoundPage from '@/pages/NotFoundPage';
+
+/* ─── Info pages (new) ─────────────────────────────────── */
+import AboutPage from '@/pages/AboutPage';
+import HelpPage from '@/pages/HelpPage';
+import ContactPage from '@/pages/ContactPage';
+import TermsPage from '@/pages/TermsPage';
+import PrivacyPage from '@/pages/PrivacyPage';
+import ReturnsPage from '@/pages/ReturnsPage';
 
 /* ─── Customer pages ───────────────────────────────────── */
 import HomePage from '@/pages/customer/HomePage';
@@ -36,6 +42,9 @@ import DisputesPage from '@/pages/customer/DisputesPage';
 import ChatPage from '@/pages/customer/ChatPage';
 import ChatThreadPage from '@/pages/customer/ChatThreadPage';
 import ProfilePage from '@/pages/customer/ProfilePage';
+import PackagesPage from '@/pages/customer/PackagesPage';
+import PackageBuilderPage from '@/pages/customer/PackageBuilderPage';
+import PackageDetailPage from '@/pages/customer/PackageDetailPage';
 
 /* ─── Staff pages ──────────────────────────────────────── */
 import TerminalPage from '@/pages/staff/TerminalPage';
@@ -66,6 +75,14 @@ export const router = createBrowserRouter([
       { path: '/categories/:slug', element: <CategoryDetailPage /> },
       { path: '/scan/:serialNumber', element: <ScanLandingPage /> },
 
+      /* ─── Info pages (new) ─────────────────────────── */
+      { path: '/about', element: <AboutPage /> },
+      { path: '/help', element: <HelpPage /> },
+      { path: '/contact', element: <ContactPage /> },
+      { path: '/terms', element: <TermsPage /> },
+      { path: '/privacy', element: <PrivacyPage /> },
+      { path: '/returns', element: <ReturnsPage /> },
+
       /* ═══════════════════════════════════════════════════
          AUTH ROUTES
       ═══════════════════════════════════════════════════ */
@@ -85,7 +102,7 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
-          /* ─── CUSTOMER ONLY ─────────────────────────── */
+          /* CUSTOMER ONLY */
           {
             element: <RoleGuard allow={['customer']} />,
             children: [
@@ -107,23 +124,20 @@ export const router = createBrowserRouter([
                   { path: '/chat/:id', element: <ChatThreadPage /> },
                   { path: '/profile', element: <ProfilePage /> },
                   { path: '/packages', element: <PackagesPage /> },
-{ path: '/packages/new', element: <PackageBuilderPage /> },
-{ path: '/packages/:id', element: <PackageDetailPage /> },
-{ path: '/packages/:id/edit', element: <PackageBuilderPage /> },
+                  { path: '/packages/new', element: <PackageBuilderPage /> },
+                  { path: '/packages/:id', element: <PackageDetailPage /> },
+                  { path: '/packages/:id/edit', element: <PackageBuilderPage /> },
                 ],
               },
             ],
           },
 
-          /* ─── STAFF ONLY ────────────────────────────── */
+          /* STAFF ONLY */
           {
             element: <RoleGuard allow={['staff']} />,
             children: [
-              /* Full-screen scanner pages — no layout, no password guard */
               { path: '/staff/scan', element: <StockScanPage /> },
               { path: '/staff/scan/success', element: <StockScanSuccessPage /> },
-
-              /* Everything else: password guard + staff layout */
               {
                 element: <MustChangePasswordGuard />,
                 children: [
@@ -133,10 +147,7 @@ export const router = createBrowserRouter([
                       { path: '/staff/terminal', element: <TerminalPage /> },
                       { path: '/staff/stock', element: <StockListPage /> },
                       { path: '/staff/profile', element: <StaffProfilePage /> },
-                      {
-                        path: '/staff/change-password',
-                        element: <ChangePasswordPage />,
-                      },
+                      { path: '/staff/change-password', element: <ChangePasswordPage /> },
                       { path: '/staff/denied', element: <AccessDeniedPage /> },
                     ],
                   },
@@ -147,9 +158,7 @@ export const router = createBrowserRouter([
         ],
       },
 
-      /* ═══════════════════════════════════════════════════
-         REDIRECTS + 404
-      ═══════════════════════════════════════════════════ */
+      /* Redirects + 404 */
       { path: '/dashboard', element: <Navigate to="/home" replace /> },
       { path: '*', element: <NotFoundPage /> },
     ],

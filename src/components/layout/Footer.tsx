@@ -4,43 +4,29 @@ import { Logo } from '@/components/brand/Logo';
 import { toast } from '@/hooks/useToast';
 
 /* ═══════════════════════════════════════════════════════════
-   LINK DATA
+   LINK DATA — every destination is a real, existing page
 ═══════════════════════════════════════════════════════════ */
 const NEED_HELP = [
   { label: 'Chat with us', to: '/chat' },
-  { label: 'Help Center', to: '#' },
-  { label: 'Contact Us', to: '/chat' },
+  { label: 'Help Center', to: '/help' },
+  { label: 'Contact Us', to: '/contact' },
   { label: 'Track my order', to: '/orders' },
 ];
 
-const USEFUL_LINKS = [
-  { label: 'How to shop on Vickkyaku', to: '#' },
-  { label: 'Delivery options and timelines', to: '#' },
-  { label: 'How to return a product', to: '#' },
-  { label: 'Report a Product', to: '/disputes' },
-  { label: 'Dispute Resolution Policy', to: '#' },
-  { label: 'Returns & Refund Timeline', to: '#' },
-  { label: 'Return Policy', to: '#' },
-];
-
 const ABOUT = [
-  { label: 'About us', to: '#' },
-  { label: 'Vickkyaku careers', to: '#' },
-  { label: 'Terms and Conditions', to: '#' },
-  { label: 'Payment Information Guidelines', to: '#' },
+  { label: 'About us', to: '/about' },
   { label: 'Our Sellers', to: '/products' },
   { label: 'Flash Sales', to: '/products?sort=price_asc' },
 ];
 
-const PRIVACY = [
-  { label: 'Privacy Notice', to: '#' },
-  { label: 'Cookie Notice', to: '#' },
-  { label: 'Cookie Preferences', to: '#' },
+const LEGAL = [
+  { label: 'Terms of Service', to: '/terms' },
+  { label: 'Privacy Notice', to: '/privacy' },
+  { label: 'Return Policy', to: '/returns' },
 ];
 
 const MAKE_MONEY = [
   { label: 'Sell on Vickkyaku', to: '/login' },
-  { label: 'Vendor hub', to: '#' },
   { label: 'Become a Sales Consultant', to: '/signup' },
 ];
 
@@ -130,7 +116,6 @@ export function Footer() {
               </h3>
               <p className="mt-1.5 text-[12.5px] font-medium leading-relaxed text-ink-400">
                 Get updates on our latest offers, deals, and cashback campaigns.
-                You can withdraw consent at any time.
               </p>
             </div>
             <form onSubmit={handleSubscribe} className="mt-4 flex w-full max-w-md gap-2 lg:mt-0">
@@ -162,30 +147,17 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Link columns — 3 cols now */}
+      {/* Link columns */}
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-12">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
-          {/* Col 1 */}
-          <div className="space-y-8">
-            <FooterGroup title="Need help?" links={NEED_HELP} />
-            <FooterGroup title="Useful links" links={USEFUL_LINKS} />
-          </div>
-
-          {/* Col 2 */}
-          <div className="space-y-8">
-            <FooterGroup title="About Vickkyaku" links={ABOUT} />
-            <FooterGroup title="Privacy" links={PRIVACY} />
-          </div>
-
-          {/* Col 3 */}
-          <div className="space-y-8">
-            <FooterGroup title="Make money with Vickkyaku" links={MAKE_MONEY} />
-          </div>
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10">
+          <FooterGroup title="Need help?" links={NEED_HELP} />
+          <FooterGroup title="About Vickkyaku" links={ABOUT} />
+          <FooterGroup title="Legal" links={LEGAL} />
+          <FooterGroup title="Make money with Vickkyaku" links={MAKE_MONEY} />
         </div>
 
         {/* Contact + Social */}
         <div className="mt-12 grid gap-8 border-t border-white/[.06] pt-10 sm:grid-cols-2">
-          {/* Contact — email only */}
           <div>
             <h4 className="text-[11px] font-bold uppercase tracking-[0.16em] text-white">
               Contact us
@@ -207,7 +179,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Social + payments */}
           <div className="space-y-8">
             <div>
               <h4 className="text-[11px] font-bold uppercase tracking-[0.16em] text-white">
@@ -269,9 +240,9 @@ export function Footer() {
           </p>
 
           <div className="flex items-center gap-4 text-[11px] font-medium text-ink-500">
-            <Link to="#" className="transition-colors hover:text-ink-300">Terms</Link>
-            <Link to="#" className="transition-colors hover:text-ink-300">Privacy</Link>
-            <Link to="#" className="transition-colors hover:text-ink-300">Cookies</Link>
+            <Link to="/terms" className="transition-colors hover:text-ink-300">Terms</Link>
+            <Link to="/privacy" className="transition-colors hover:text-ink-300">Privacy</Link>
+            <Link to="/returns" className="transition-colors hover:text-ink-300">Returns</Link>
           </div>
         </div>
       </div>
