@@ -1,0 +1,32 @@
+# ── Vickkyaku robots.txt ────────────────────────────────────
+User-agent: *
+Allow: /
+
+# ── Auth pages ─────────────────────────────────────────────
+Disallow: /login
+Disallow: /signup
+Disallow: /verify-otp
+Disallow: /profile-setup
+
+# ── Private account routes ─────────────────────────────────
+Disallow: /home
+Disallow: /cart
+Disallow: /checkout
+Disallow: /orders
+Disallow: /wallet
+Disallow: /withdrawal
+Disallow: /payout
+Disallow: /disputes
+Disallow: /chat
+Disallow: /profile
+Disallow: /packages
+Disallow: /scan
+Disallow: /scan-result
+
+# ── Staff routes ───────────────────────────────────────────
+Disallow: /staff/
+
+# ── API ────────────────────────────────────────────────────
+Disallow: /api/
+
+Sitemap: https://vickkyaku.store/sitemap.xml

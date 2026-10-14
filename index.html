@@ -1,15 +1,166 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-NG">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         PRIMARY META
+    ═══════════════════════════════════════════════════════ -->
+    <title>Vickkyaku — Buy Nigerian Local Food Online | Earn Cashback</title>
+    <meta
+      name="description"
+      content="Shop authentic Nigerian local food products online — garri, egusi, palm oil, crayfish, rice, beans and more. Delivered anywhere in Nigeria. Earn cashback on every sealed pack."
+    />
+    <meta
+      name="keywords"
+      content="buy Nigerian food online, Nigerian local food, Nigerian foodstuff, garri online, egusi, palm oil, crayfish Nigeria, Nigerian groceries online, local food delivery Nigeria, buy foodstuff Lagos, cashback Nigerian food"
+    />
+    <meta name="author" content="Vickkyaku" />
+    <meta name="geo.region" content="NG" />
+    <meta name="geo.placename" content="Nigeria" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <link rel="canonical" href="https://vickkyaku.store/" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         THEME + ICONS
+    ═══════════════════════════════════════════════════════ -->
     <meta name="theme-color" content="#05070d" />
-    <meta name="description" content="Vickkyaku" />
-    <title>Vickkyaku</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         OPEN GRAPH (WhatsApp is Nigeria's #1 share channel)
+    ═══════════════════════════════════════════════════════ -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Vickkyaku" />
+    <meta property="og:title" content="Buy Nigerian Local Food Online — Vickkyaku" />
+    <meta
+      property="og:description"
+      content="Authentic Nigerian foodstuff delivered anywhere in Nigeria. Garri, egusi, palm oil, crayfish, rice and more. Earn cashback on every sealed pack."
+    />
+    <meta property="og:url" content="https://vickkyaku.store/" />
+    <meta property="og:image" content="https://vickkyaku.store/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Vickkyaku — Nigerian local food, delivered" />
+    <meta property="og:locale" content="en_NG" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         TWITTER / X
+    ═══════════════════════════════════════════════════════ -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Buy Nigerian Local Food Online — Vickkyaku" />
+    <meta
+      name="twitter:description"
+      content="Authentic Nigerian foodstuff delivered anywhere in Nigeria. Earn cashback on every sealed pack."
+    />
+    <meta name="twitter:image" content="https://vickkyaku.store/og-image.jpg" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         FONTS
+    ═══════════════════════════════════════════════════════ -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- ═══════════════════════════════════════════════════════
+         STRUCTURED DATA — Organization
+    ═══════════════════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Vickkyaku",
+      "alternateName": "Vickkyaku Nigerian Food",
+      "url": "https://vickkyaku.store",
+      "logo": "https://vickkyaku.store/vickkyaku.png",
+      "email": "info@vickkyaku.store",
+      "description": "Nigerian online store for authentic local food products — garri, egusi, palm oil, crayfish, rice, beans, and more. Cashback on every sealed pack.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "NG"
+      },
+      "areaServed": {
+        "@type": "Country",
+        "name": "Nigeria"
+      },
+      "sameAs": [
+        "https://facebook.com",
+        "https://instagram.com",
+        "https://x.com",
+        "https://tiktok.com"
+      ]
+    }
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════
+         STRUCTURED DATA — GroceryStore
+         Signals to Google that this is a Nigerian food/grocery
+         commerce site — much stronger than "OnlineStore".
+    ═══════════════════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "GroceryStore",
+      "name": "Vickkyaku",
+      "url": "https://vickkyaku.store",
+      "image": "https://vickkyaku.store/og-image.jpg",
+      "description": "Nigerian local food store — buy garri, egusi, palm oil, crayfish, rice, beans and more online. Delivered nationwide.",
+      "currenciesAccepted": "NGN",
+      "paymentAccepted": "Bank Transfer, Pay on Delivery",
+      "priceRange": "₦₦",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "NG"
+      },
+      "areaServed": {
+        "@type": "Country",
+        "name": "Nigeria"
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+        "opens": "00:00",
+        "closes": "23:59"
+      },
+      "servesCuisine": "Nigerian",
+      "department": [
+        { "@type": "GroceryStore", "name": "Grains & Tubers" },
+        { "@type": "GroceryStore", "name": "Spices & Seasoning" },
+        { "@type": "GroceryStore", "name": "Palm Oil & Oils" },
+        { "@type": "GroceryStore", "name": "Dried Fish & Crayfish" },
+        { "@type": "GroceryStore", "name": "Beans & Legumes" },
+        { "@type": "GroceryStore", "name": "Snacks & Provisions" }
+      ]
+    }
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════
+         STRUCTURED DATA — WebSite with Search
+    ═══════════════════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Vickkyaku",
+      "url": "https://vickkyaku.store",
+      "inLanguage": "en-NG",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://vickkyaku.store/products?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
