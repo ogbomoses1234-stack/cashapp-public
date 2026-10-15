@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { listMyPackages } from '@/services/package.service';
 import type { PackageRequest, PackageStatus } from '@/types/package';
@@ -29,25 +29,55 @@ const FILTERS: { key: Filter; label: string }[] = [
 ];
 const CLOSED: PackageStatus[] = ['delivered', 'cancelled'];
 
+const POLL_INTERVAL_MS = 20_000;
+
 export default function PackagesPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState<PackageRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>('all');
+  const mountedRef = useRef(true);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (opts: { silent?: boolean } = {}) => {
+    if (!opts.silent) setLoading(true);
     try {
-      setItems(await listMyPackages());
+      const list = await listMyPackages();
+      if (!mountedRef.current) return;
+      setItems(list);
     } catch (e) {
+      if (!mountedRef.current) return;
       setItems([]);
       const err = e as ApiClientError;
-      if (err.status !== 404 && err.status !== 0) toast.error(err.message);
+      if (!opts.silent && err.status !== 404 && err.status !== 0) {
+        toast.error(err.message);
+      }
     } finally {
-      setLoading(false);
+      if (!opts.silent && mountedRef.current) setLoading(false);
     }
   }, []);
-  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    load();
+    return () => { mountedRef.current = false; };
+  }, [load]);
+
+  /* Poll for updates */
+  useEffect(() => {
+    const tick = () => {
+      if (document.visibilityState !== 'visible') return;
+      load({ silent: true }).catch(() => {});
+    };
+    const interval = setInterval(tick, POLL_INTERVAL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') load({ silent: true }).catch(() => {});
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [load]);
 
   const visible = items.filter((p) => {
     if (filter === 'all') return true;
@@ -73,10 +103,10 @@ export default function PackagesPage() {
             Send us a list — we source it and deliver to your door
           </p>
         </div>
-        <RefreshButton onRefresh={load} label="Refresh lists" />
+        <RefreshButton onRefresh={() => load()} label="Refresh lists" />
       </div>
 
-      {/* Hero card */}
+      {/* Hero */}
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-600 via-violet-700 to-ink-950 p-5 text-white">
         <div
           aria-hidden
@@ -160,6 +190,7 @@ function PackageCard({ request }: { request: PackageRequest }) {
   const meta = STATUS_META[request.status] ?? STATUS_META.draft;
   const itemCount = request.items.length;
   const hasPendingEdit = request.pendingEditRequest?.status === 'pending';
+  const hasQuote = !!request.quotedTotal;
 
   return (
     <Link
@@ -200,9 +231,14 @@ function PackageCard({ request }: { request: PackageRequest }) {
         </svg>
       </div>
 
+      {/* Footer strip */}
       {hasPendingEdit ? (
         <div className="border-t border-amber-100 bg-amber-50/70 px-4 py-2 text-[10.5px] font-semibold text-amber-800">
           ⏳ Edit request pending admin approval
+        </div>
+      ) : hasQuote ? (
+        <div className="border-t border-brand-100 bg-brand-50/70 px-4 py-2 text-[10.5px] font-semibold text-brand-800">
+          💰 Quote sent — check messages to confirm
         </div>
       ) : request.status === 'draft' ? (
         <div className="border-t border-ink-100 bg-ink-50/40 px-4 py-2 text-[10.5px] font-semibold text-ink-600">
