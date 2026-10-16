@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScannerLayout } from '@/layouts/ScannerLayout';
 import { Button } from '@/components/ui/Button';
@@ -12,21 +12,41 @@ const SCANNER_ID = 'qrcb-staff-scanner';
 
 export default function StockScanPage() {
   const navigate = useNavigate();
-  const [busy, setBusy] = useState(false);
   const [scannedCount, setScannedCount] = useState(0);
   const [lastSerial, setLastSerial] = useState<string | null>(null);
+
+  /* ─── Guards ──────────────────────────────────────────
+     busyRef       — blocks concurrent onScan calls
+     submittedRef  — session-scoped set: a successfully dispatched
+                     serial never re-fires. Failed serials aren't
+                     added, so a retry after the debounce window
+                     works normally.  */
+  const busyRef = useRef(false);
+  const submittedRef = useRef(new Set<string>());
 
   const { status, error, isScanning, isStarting, hasTorch, torchOn, start, stop, toggleTorch } =
     useQrScanner({
       elementId: SCANNER_ID,
-      debounceMs: 1200,
+      debounceMs: 1500,
       onScan: async (decodedText) => {
+        // Synchronous — reject parallel invocations
+        if (busyRef.current) return;
+
         const parsed = parseQrPayload(decodedText);
-        if (!parsed) { toast.error('Not a Vickkyaku seal'); return; }
-        if (busy) return;
-        setBusy(true);
+        if (!parsed) {
+          toast.error('Not a Vickkyaku seal');
+          return;
+        }
+
+        // Already successfully logged this session?
+        if (submittedRef.current.has(parsed.serialNumber)) return;
+
+        busyRef.current = true;
         try {
           await dispatchSerial(parsed);
+
+          // Only mark as submitted on success
+          submittedRef.current.add(parsed.serialNumber);
           setScannedCount((n) => n + 1);
           setLastSerial(parsed.serialNumber);
           toast.success(`Logged · #${parsed.serialNumber}`);
@@ -34,15 +54,22 @@ export default function StockScanPage() {
         } catch (e) {
           toast.error((e as ApiClientError).message);
         } finally {
-          setTimeout(() => setBusy(false), 350);
+          // Small cooldown before allowing the next scan
+          setTimeout(() => {
+            busyRef.current = false;
+          }, 500);
         }
       },
     });
 
+  /* ─── Start on mount, stop on unmount ──────────────── */
   useEffect(() => {
     const t = setTimeout(() => start(), 150);
-    return () => { clearTimeout(t); stop(); };
-    // eslint-disable-next-line
+    return () => {
+      clearTimeout(t);
+      stop();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -57,7 +84,9 @@ export default function StockScanPage() {
           >
             ✕
           </button>
-          <span className="text-[13.5px] font-semibold text-white">Stock-out scanner</span>
+          <span className="text-[13.5px] font-semibold text-white">
+            Stock-out scanner
+          </span>
           {hasTorch ? (
             <button
               onClick={toggleTorch}

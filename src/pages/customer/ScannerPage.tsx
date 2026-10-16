@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScannerLayout } from '@/layouts/ScannerLayout';
 import { Button } from '@/components/ui/Button';
@@ -15,23 +15,40 @@ const SCANNER_ID = 'qrcb-customer-scanner';
 export default function ScannerPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
-  const [busy, setBusy] = useState(false);
+
+  /* ─── Guards ──────────────────────────────────────────
+     busyRef       — blocks concurrent onScan calls
+     submittedRef  — one serial per session (customer only scans one pack)
+     Both are refs (not state) so they update synchronously
+     before any async work, preventing double-fires.  */
+  const busyRef = useRef(false);
+  const submittedRef = useRef(new Set<string>());
 
   const { status, error, isScanning, isStarting, hasTorch, torchOn, start, stop, toggleTorch } =
     useQrScanner({
       elementId: SCANNER_ID,
-      debounceMs: 2500,
+      debounceMs: 1500, // same QR won't re-fire within 1.5 s
       onScan: async (decodedText) => {
+        // Synchronous guard — reject any parallel invocation immediately
+        if (busyRef.current) return;
+
         const parsed = parseQrPayload(decodedText);
         if (!parsed) {
           toast.error('This QR code is not from Vickkyaku');
           return;
         }
 
-        if (busy) return;
-        setBusy(true);
+        // Already tried this serial this session?
+        if (submittedRef.current.has(parsed.serialNumber)) return;
+        submittedRef.current.add(parsed.serialNumber);
+
+        busyRef.current = true;
+
         try {
+          // Stop the camera FIRST — no more frames decoded while we're
+          // waiting on the network. Prevents duplicate server calls.
           await stop();
+
           const res = await redeemScan(parsed);
           toast.success(`+${formatNaira(res.credited)} credited!`);
           navigate(
@@ -44,19 +61,20 @@ export default function ScannerPage() {
               err.message
             )}`
           );
-        } finally {
-          setBusy(false);
         }
+        // No finally → we never reset busyRef. On success we navigate away;
+        // on failure we also navigate away. The component unmounts either
+        // way, so there's no state to leave hanging.
       },
     });
 
-  /* Guard: customer only */
+  /* ─── Customer-only guard ───────────────────────────── */
   useEffect(() => {
     if (!user) navigate('/login', { replace: true });
     if (user?.role === 'staff') navigate('/staff/scan', { replace: true });
   }, [user, navigate]);
 
-  /* Auto-start on mount */
+  /* ─── Auto-start camera on mount, stop on unmount ──── */
   useEffect(() => {
     const t = setTimeout(() => start(), 150);
     return () => {
@@ -102,7 +120,6 @@ export default function ScannerPage() {
             SCANNER VIEWPORT
         ═══════════════════════════════════════════════════ */}
         <div className="relative flex flex-1 flex-col items-center justify-center gap-8">
-          {/* Scanner container — html5-qrcode injects the <video> here */}
           <div className="relative h-72 w-72 overflow-hidden rounded-3xl bg-black">
             <div id={SCANNER_ID} className="h-full w-full" />
 
@@ -117,7 +134,6 @@ export default function ScannerPage() {
               <span className="pointer-events-none absolute left-4 right-4 h-[2.5px] animate-laser rounded-full bg-gradient-to-r from-transparent via-brand-400 to-transparent" />
             )}
 
-            {/* Overlay: starting */}
             {isStarting && (
               <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/70 text-center">
                 <div>
@@ -129,7 +145,6 @@ export default function ScannerPage() {
               </div>
             )}
 
-            {/* Overlay: error */}
             {status === 'error' && error && (
               <div className="absolute inset-0 grid place-items-center bg-black/85 p-4 text-center">
                 <div>
@@ -145,7 +160,6 @@ export default function ScannerPage() {
             )}
           </div>
 
-          {/* Instruction */}
           <p className="max-w-[280px] text-center text-[13px] font-semibold text-slate-400">
             {isScanning
               ? 'Fit the QR seal inside the frame'
@@ -160,12 +174,7 @@ export default function ScannerPage() {
         ═══════════════════════════════════════════════════ */}
         <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-ink-900 via-ink-900/90 to-transparent px-5 pb-10 pt-5">
           {status === 'error' ? (
-            <Button
-              variant="primary"
-              size="lg"
-              block
-              onClick={() => start()}
-            >
+            <Button variant="primary" size="lg" block onClick={() => start()}>
               Try again
             </Button>
           ) : isScanning ? (
